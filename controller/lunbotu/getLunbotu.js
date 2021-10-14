@@ -6,8 +6,10 @@ const callCloudFile = require('../../utils/callCloudFile.js')
 
 // @ts-ignore
 router.get('/lunbotu', async(ctx) => {
+  console.log(11111111111111111111111)
   let query = `db.collection('lunbotu').get()`
   let lunbotu = await callCloudDataBase('databasequery', query)
+  console.log('2222', lunbotu)
   const picMap = {}
   let fileList = lunbotu.data.map(element => {
     if(!picMap[JSON.parse(element).url]){
