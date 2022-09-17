@@ -2,6 +2,7 @@ const Koa = require('koa')
 const app = new Koa()
 const koaBody = require('koa-body')
 const views = require('koa-views')
+
 /**静态资源目录设置 */
 const path = require('path')
 const staticFiles = require('koa-static')
@@ -9,15 +10,17 @@ app.use(staticFiles(path.join(__dirname + '/public')))
 console.log("path.join(__dirname + 'public')===>", path.join(__dirname + '/public'))
 
 
-
 app.use(views('./views', {map: {"html":"ejs"}}))
 
 const Router = require('koa-router')
 var bodyParser = require('koa-bodyparser');
 const xml = require('./utils/xml')
-const {jsonToXml} = require('./controller/taobaoke/test')
-const {getResponse} = require('./controller/weixinapi/responceClint')
-const {createTaolijing} = require('./controller/taobaoke/createTaolijing')
+const { jsonToXml } = require('./controller/taobaoke/test')
+const { getResponse } = require('./controller/weixinapi/responceClint')
+const { createTaolijing } = require('./controller/taobaoke/createTaolijing')
+const { sendMsgToClient } = require('./controller/weixinapi/sendMsgToClient')
+const { creatUserInfor } = require('./controller/pddPromotion/creatUserInfo')
+const { getGoodsDetail } = require('./controller/duoduoke/pddPromotionApi')
 
 
 const router = new Router()
@@ -35,6 +38,7 @@ app.use(bodyParser())
 
 
 app.use(async ctx => {
+  let startTime = new Date().getTime()
   let {signature, echostr, timestamp, nonce } = ctx.query
   if(ctx.method === "GET"){
     ctx.body = echostr;
@@ -46,42 +50,76 @@ app.use(async ctx => {
       xmlJson[res] = temp[res][0]
     }
     if(temp.MsgType[0]==='text'){ // 普通事件
-      let resExp = /购物福利/g
       let autoJsLearn = /^(学习|资料)+[0-9]*$/
       let autoMatch = xmlJson.Content.match(autoJsLearn)
-      let matchRes = xmlJson.Content.match(resExp)
+      let pddEXP = /(\bgoodsid\b|\bpxq_secret_key\b)/
+      let isPDDlind = pddEXP.test(xmlJson.Content)
 
-      console.log('xmlJson.Content==>', xmlJson.Content)
-      console.log('matchRes==>', matchRes)
-      if(matchRes !== null){
+      let sendMsg = '亲，该商家无活动'
+      let returnMoney = ''
+      let amount = ''
+      if(xmlJson.Content === '申请内测'){
         xmlJson.type = 'text'
-        xmlJson.sendMsg = '1👈￥ag0wXp54wyj￥ 30圆[红包]快抢！全网通用可叠加！无任何限制, 金额随机'
+        xmlJson.sendMsg = `拼夕夕内测申请成功! \n你的内测邀请码为：${xmlJson.FromUserName}`
+        let createRes = await creatUserInfor(xmlJson.FromUserName)
+
+        if(createRes === 'hasPermission'){
+          xmlJson.sendMsg = `你的内测邀请码为：${xmlJson.FromUserName}`
+        }
         let resMsg = getResponse(xmlJson)
         ctx.body = resMsg
+
+        // 发送拼多多返现教程图文消息
+        xmlJson.sendMsg = [
+          {
+            "title":"拼夕夕内测返现教程",
+            "description":"支持小于1元返现、下单即可查看返现",
+            "picurl":"https://mmbiz.qpic.cn/mmbiz_png/3FcHC1peJGeZNjSnqtYiaaWRLkRicxIbzoEY3SU8zs3eKgLAIQuhMVoaTyAXPHL6jCictx7ia3YzEKk5jVRu7Ehm5Q/0?wx_fmt=png",
+            "url":"https://mp.weixin.qq.com/s/5D-3kcmxuRB3fzV_xJrEMw"
+          }
+        ]
+        sendMsgToClient('news', xmlJson)
+        
       }else if(autoMatch !==null){
         xmlJson.type = 'text'
-        xmlJson.sendMsg = `百度网盘链接:https://pan.baidu.com/s/1gQ_QRCCvhzlEhHF01LabJw 提取码:30qy \n
+        xmlJson.sendMsg = `
+        一、舔狗神器的资料和源码：\n
+        百度网盘链接:https://pan.baidu.com/s/1gQ_QRCCvhzlEhHF01LabJw 提取码:30qy \n
+       
         百度网盘:https://pan.baidu.com/s/1g35kZu_O5cLKeksp5a92NA 提取码:641n \n
-        这俩个是课程里舔狗神器的资料和源码\n
-
+       
+        二、自动收能量源码: \n
         github源码： https://github.com/Div-student/antEnergy \n
-        自动收能量的源码 \n
+       
+        三、公众号实战开发课程资料：\n 
+        链接: https://pan.baidu.com/s/1CkB7DjPxvpDwVAyvABBshw?pwd=tpp3 提取码: tpp3 
         `
         let resMsg = getResponse(xmlJson)
         ctx.body = resMsg
+      }else if(isPDDlind){ // 拼多多商品解析
+        ctx.body = 'success'
+        getGoodsDetail(xmlJson.Content, xmlJson.FromUserName).then((pddRes)=>{
+          if(pddRes && pddRes.promotion_rate > 0){
+            amount = pddRes.has_coupon?`优惠券: ${pddRes.coupon_discount.toFixed(2)}\n`:''
+            returnMoney = ((pddRes.min_group_price - pddRes.coupon_discount)*(pddRes.promotion_rate/1000)).toFixed(2)
+            sendMsg = amount + `券后价格: ${(pddRes.min_group_price - pddRes.coupon_discount).toFixed(2)}\n额外返现: ${returnMoney}\n------------------\n<a href="${pddRes.urlWithGoodSign}">点击领取返现</a> -> 拼多多下单`
+          }
+          xmlJson.type = 'text'
+          xmlJson.sendMsg = sendMsg
+          sendMsgToClient('text', xmlJson)
+        })
       }else{
-        let taobaokeInfor = await jsonToXml(xmlJson.Content)
-        let sendMsg = '亲，该商家无活动'
-        let returnMoney = ''
-        let amount = taobaokeInfor.amount?`优惠券: ${taobaokeInfor.amount}\n`:''
-        if(taobaokeInfor.commissionRate > 0){
-          returnMoney = ((taobaokeInfor.price)*(taobaokeInfor.commissionRate)*0.9).toFixed(2)
-          sendMsg = amount + `券后价格: ${taobaokeInfor.price}\n额外返现: ${returnMoney}\n------------------\n${taobaokeInfor.longTpwd}Tao@ba0下单`
-        }
-        xmlJson.type = 'text'
-        xmlJson.sendMsg = sendMsg
-        let resMsg = getResponse(xmlJson)
-        ctx.body = resMsg
+        ctx.body = 'success'
+        let taobaokeInfor = jsonToXml(xmlJson.Content).then(taobaokeInfor => {
+          amount = taobaokeInfor.amount?`优惠券: ${taobaokeInfor.amount}\n`:''
+          if(taobaokeInfor.commissionRate > 0){
+            returnMoney = ((taobaokeInfor.price)*(taobaokeInfor.commissionRate)*0.9).toFixed(2)
+            sendMsg = amount + `券后价格: ${taobaokeInfor.price}\n额外返现: ${returnMoney}\n------------------\n${taobaokeInfor.longTpwd}Tao@ba0下单`
+          }
+          xmlJson.type = 'text'
+          xmlJson.sendMsg = sendMsg
+          sendMsgToClient('text', xmlJson)
+        })
       }
     }else if(temp.MsgType[0] === 'event'){
       if(temp.Event[0] === "CLICK"){
@@ -104,13 +142,31 @@ app.use(async ctx => {
   }
 })
 
-// 微信公众号后端页面渲染
+// 微信公众号后端页面渲染--解析返现
 router.get('/index', async ctx => {
   await ctx.render('index',{
     'kouling': '2￥nR0lXL0fBl3￥/',
     'ticketCount': '4'
   })
 })
+
+// 微信公众号后端页面渲染--个人中心
+router.get('/userInfor', async ctx => {
+  await ctx.render('userInfor',{
+    'kouling': '2￥nR0lXL0fBl3￥/',
+    'ticketCount': '4'
+  })
+})
+
+// 微信公众号后端页面渲染--登录注册
+router.get('/login', async ctx => {
+  await ctx.render('login',{
+    'kouling': '2￥nR0lXL0fBl3￥/',
+    'ticketCount': '4'
+  })
+})
+
+
 
 // 添加淘礼金接口
 router.post('/creatTaoLiJing', async ctx => {
@@ -126,6 +182,30 @@ router.post('/creatTaoLiJing', async ctx => {
   ctx.body = taolijingInfo
 })
 
+/**
+ * 拼多多推广相关接口
+ */
+// 根据用户的wechat_uid获取订单列表 api: /pddOrderList/get
+const getPddOrderList = require('./controller/pddPromotion/getOrderList')
+router.use('/pddOrderList', getPddOrderList.routes())
+
+// 查询用户信息 api: /userInfor/get
+const getUserInfor = require('./controller/pddPromotion/getUserInfo')
+router.use('/userInfor', getUserInfor.routes())
+
+// 用户登录 api: /userInfor/login
+const verifyLogin = require('./controller/pddPromotion/verifyLogin')
+router.use('/userInfor', verifyLogin.routes())
+
+// 绑定邀请码 api: /bindInvitationCode/bindCode
+const bindInvitationCode = require('./controller/pddPromotion/bindInvitationCode')
+router.use('/bindInvitationCode', bindInvitationCode.routes())
+
+// 手动同步拼多多订单 api: /manuaulGetOrderList/get
+const manuaulGetOrderList = require('./controller/pddPromotion/manuaulGetOrderList')
+router.use('/manuaulGetOrderList', manuaulGetOrderList.routes())
+
+// -----------------------------------
 
 // 获取我的订单列表 api: /orderList/update
 const updateMyOrderList = require('./controller/myProfile/updateOrderList')

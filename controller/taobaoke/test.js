@@ -1,4 +1,5 @@
 const dtkSdk = require('dtk-nodejs-api-sdk');
+const ApiClient = require('./taobaoSdk/index').ApiClient;
 
 /*
  *  @checkSign: 1 默认老版本验签  2 新版验签
@@ -7,7 +8,7 @@ const dtkSdk = require('dtk-nodejs-api-sdk');
  */ 
 
 const sdk = new dtkSdk({appKey:'5ee62b32658a6',appSecret:'f1506316f0e0358b941c3606423db75f',checkSign:2});
-const tkl = '8.0 hihi:/哈cuQlXNipCQO啊  王饱饱燕麦片早餐即食冲饮麦片水果坚果泡酸奶果粒混合干吃谷物'
+const tkl = '88啊7C4r2byfJvp嘻 https://m.tb.cn/h.f9wuQzx?sm=323733  结义车载吸尘器车用无线充电家用两用汽车内小型大功率强力手持机'
 
 // 封装 promise
 let queryApi = (uri) => {
@@ -26,6 +27,7 @@ let showTokenInfor = {
   startFee: "", // 商品原始价格
   price: "", // 商品折后价格
   amount: "", // 优惠券金额
+  goodsId: "", // 商品ID
 
   commissionRate: 0, // 商品佣金比例
   tpwd: "", // 转换后的淘口令
@@ -37,8 +39,11 @@ let showTokenInfor = {
 // 获取转换后的淘口令 佣金比例 
 let getTwd = async (content) => {
   let url = `https://openapi.dataoke.com/api/tb-service/twd-to-twd?content=${encodeURIComponent(content)}&version=v1.0.0`
+  // let url = `https://openapi.dataoke.com/api/tb-service/parse-taokouling?content=${encodeURIComponent(content)}&version=v1.0.0`
   try{
+    let statTime = new Date().getTime()
     let res = await queryApi(url)
+    console.log('淘口令转换接口耗时===>', new Date().getTime() - statTime) 
     if(res.data){
       let prd = res.data
       showTokenInfor.tpwd = prd.tpwd
@@ -59,13 +64,16 @@ let productDetail = (content) => {
   return new Promise( async(resolve, rejected)=>{
     let proUrl = `https://openapi.dataoke.com/api/tb-service/parse-content?content=${encodeURIComponent(content)}&version=v1.0.0`
     try{
+      let statTime = new Date().getTime()
       let res = await queryApi(proUrl)
+      console.log('获取商品详情接口耗时===>', new Date().getTime() - statTime) 
       if(res.data && res.data.originInfo){
         let proInfor = res.data.originInfo
         showTokenInfor.title = proInfor.title
         showTokenInfor.startFee = proInfor.startFee
         showTokenInfor.price = proInfor.price
         showTokenInfor.amount = proInfor.amount
+        showTokenInfor.goodsId = res.data.goodsId
       }
       resolve()
     }catch(error){
@@ -75,10 +83,6 @@ let productDetail = (content) => {
   })
 }
 
-Promise.all([productDetail(tkl), getTwd(tkl)]).then(res=>{
-  console.log('showTokenInfor====>', showTokenInfor)
-})
-
 
 exports.jsonToXml = tkls => {
   return new Promise((resolve, rejected)=>{
@@ -87,9 +91,4 @@ exports.jsonToXml = tkls => {
     })
   })
 }
-
-
-
-
-
 

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/2.0.1/weui.min.css">
+  <title>订单中心</title>
+  <style>
+    .weui-form-preview__hd .weui-form-preview__value{
+      font-size: 1rem!important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #p4 .weui-form-preview__value{
+      color: #c54841
+    }
+    #p3 .weui-form-preview__value{
+      color: #bd3c34
+    }
+    .viewMore{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .page{
+      overflow: auto;
+      max-height: 96vh;
+    }
+    #mask{
+      position:absolute;
+      height: 100vh;
+      width: 100vw;
+      z-index: 1;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: aliceblue;
+    }
+    #syncOrder{
+      background: wheat;
+      border: 1px solid #cccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="mask" style="display: none"><div>数据加载中...</div></div>
+  <div class="page">
+    <div class="page__hd">
+      <h1 class="page__title">我的订单</h1>
+      <p class="page__desc">订单预览 <span id="syncOrder" style="visibility:hidden" onclick="syncOrderList()">手动同步订单</span></p>
+      <div id="nodata" style="display: none" class="weui-loadmore weui-loadmore_line">
+        <span class="weui-loadmore__tips">暂无订单数据</span>
+      </div>
+    </div>
+  </div>
+  <div class="viewMore" onclick='viewMore()'>查看更多订单...</div>
+  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
+  <script type="text/javascript" src="https://res.wx.qq.com/t/wx_fed/cdn_libs/res/weui/1.2.3/weui.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    let pageNum = 1;
+    let pageSize = 5;
+    function viewMore(){
+      let domMask = document.getElementById('mask').style.display = ''
+      // 发送请求
+      let wechat_uid = location.search.split('=')[1]
+      if(wechat_uid === "oF-RA6fbdaY0mXnMW5lzgWVlpOXM"){
+        let syncList = $('#syncOrder')
+        syncList.attr('style', 'visibility: visible')
+      }
+      axios.post('/pddOrderList/get', { wechat_uid, pageNum, pageSize }).then((res)=>{
+        let resultData = res.data.data
+        if(resultData.length > 0){
+          pageNum +=5
+          document.getElementById('nodata').style.display = 'none'
+          resultData.forEach(element => {
+            let domPage = document.getElementsByClassName('page')
+            let domDiv = document.createElement('div')
+            domDiv.innerHTML = `<div class="weui-form-preview">
+                <div role="option" class="weui-form-preview__hd">
+                    <div class="weui-form-preview__item">
+                        <label class="weui-form-preview__label">商品名称</label>
+                        <em class="weui-form-preview__value">${element.goods_name}</em>
+                    </div>
+                </div>
+                <div role="option" aria-labelledby="p1 js_a11y_comma p2 js_a11y_comma p3" class="weui-form-preview__bd">
+                    <div id="p1" class="weui-form-preview__item">
+                      <label class="weui-form-preview__label">订单金额</label>
+                      <span class="weui-form-preview__value">¥${element.order_amount/100}</span>
+                    </div>
+                    <div id="p5" class="weui-form-preview__item">
+                      <label class="weui-form-preview__label">返现比率</label>
+                      <span class="weui-form-preview__value">${element.promotion_rate/10}%</span>
+                    </div>
+                    <div id="p3" class="weui-form-preview__item">
+                      <label class="weui-form-preview__label">预估计收益</label>
+                      <span class="weui-form-preview__value">¥${element.promotion_amount/100}</span>
+                    </div>
+                    <div id="p4" class="weui-form-preview__item">
+                      <label class="weui-form-preview__label">订单状态</label>
+                      <span class="weui-form-preview__value">${element.order_status_desc}</span>
+                    </div>
+                </div>
+              </div>`
+            domPage[0].appendChild(domDiv)
+          });
+        }else{
+          weui.alert('没有更多订单数据');
+        }
+        document.getElementById('mask').style.display = 'none'
+      })
+    }
+
+    // 页面加载时默认加载一次订单列表
+    viewMore()
+
+    // 手动同步订单列表
+    function syncOrderList(){
+      axios.post('/manuaulGetOrderList/get', {}).then(res =>{
+        weui.alert('手动同步成功'+res);
+      })
+    }
+  </script>
+ </body>
+</html>
