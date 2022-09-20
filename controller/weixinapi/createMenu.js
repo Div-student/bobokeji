@@ -15,20 +15,22 @@ const createMenu = async () => {
         "sub_button":[
           {	
             "type":"view",
-            "name":"优选优惠",
-            "url":"https://www.bobozhaoquan.cn/index.php?r=index/wap"
+            "name":"多多返现",
+            "url":"https://wechatbi.bobozhaoquan.cn/login"
           },
           {	
             "type":"view",
             "name":"解析返现",
             "url":"https://wechatbi.bobozhaoquan.cn/index"
-          },
-          {	
-            "type":"view",
-            "name":"内测申请",
-            "url":"https://3971-113-116-34-21.ngrok.io/userInfor"
-          },
+          }
         ]
+      },
+      {
+        "type":"miniprogram",
+        "name":"小程序",
+        "url":"http://mp.weixin.qq.com",
+        "appid":"wx5740cfc1ee869efc",
+        "pagepath":"pages/fistPage/fistPage"
       }
     ]
 }

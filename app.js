@@ -43,6 +43,7 @@ app.use(async ctx => {
   if(ctx.method === "GET"){
     ctx.body = echostr;
   }else if(ctx.method === "POST") {
+    console.log('ctx.request.body==>', ctx.request.body)
     let xmlDataJson = await xml.xmlToJson(ctx.request.body)
     let temp = xmlDataJson.xml
     let xmlJson = {}
