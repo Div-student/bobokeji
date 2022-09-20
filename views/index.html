@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/2.0.1/weui.min.css">
+    <title>波波科技解析</title>
+    <style>
+      body { background: #222; }
+      figure { 
+        position: absolute;
+        margin: auto;
+        top: 0; bottom: 0; left: 0; right: 0;
+        width: 6.250em; height: 6.250em;
+        animation: rotate 2.4s linear infinite;
+      }
+      .white { 
+        top: 0; bottom: 0; left: 0; right: 0; 
+        background: white; 
+        animation: flash 2.4s linear infinite;
+        opacity: 0;
+      }
+      .dot {
+        position: absolute;
+        margin: auto;
+        width: 2.4em; height: 2.4em;
+        border-radius: 100%;
+        transition: all 1s ease;
+      }
+      .dot:nth-child(2) { top: 0; bottom: 0; left: 0; background: #FF4444; animation: dotsY 2.4s linear infinite; }
+      .dot:nth-child(3) { left: 0; right: 0; top: 0; background: #FFBB33; animation: dotsX 2.4s linear infinite; }
+      .dot:nth-child(4) { top: 0; bottom: 0; right: 0; background: #99CC00; animation: dotsY 2.4s linear infinite; }
+      .dot:nth-child(5) { left: 0; right: 0; bottom: 0; background: #33B5E5; animation: dotsX 2.4s linear infinite; }
+
+      @keyframes rotate {
+        0% { transform: rotate( 0 ); }
+        10% { width: 6.250em; height: 6.250em; }
+        66% { width: 2.4em; height: 2.4em; }
+        100%{ transform: rotate(360deg); width: 6.250em; height: 6.250em; }
+      }
+
+      @keyframes dotsY {
+        66% { opacity: .1; width: 2.4em; }
+        77%{ opacity: 1; width: 0; }
+      }
+      @keyframes dotsX {
+        66% { opacity: .1; height: 2.4em;}
+        77%{ opacity: 1; height: 0; }
+      }
+
+      @keyframes flash {
+        33% { opacity: 0; border-radius: 0%; }
+        55%{ opacity: .6; border-radius: 100%; }
+        66%{ opacity: 0; }
+      } 
+
+      .title{
+        color: #ccc;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 3.5rem
+      }
+      .contentWrap{
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      #searchContent{
+        width: 100vw;
+        height: 20vh;
+        font-size: 1.2rem;
+      }
+      .btnWrap{
+        display: flex;
+        justify-content: center;
+      }
+      .loadingWrap{
+        display: none;
+      }
+      .couperWrap{
+        display: flex;
+        justify-content: space-between;
+        width: 18.65rem;
+        height: 3.15rem;
+        margin: 0 auto;
+        background-repeat: no-repeat;
+        background-size: cover!important;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        background: url(https://gw.alicdn.com/tfs/TB16d.1ykPoK1RjSZKbXXX1IXXa-665-115.png_720x720.jpg);
+        margin-top: 1rem;
+      }
+      .ticketWrap{
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      .ticketWrapFather{
+        display: none;
+      }
+      .price{
+        flex:2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: antiquewhite;
+      }
+      .priceContent{
+        font-size: 30px;
+        color: #FFF
+      }
+      .priceToken{
+        padding-top: 10px;
+      }
+      .content{
+        flex:4;
+        font-size: 12px;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        padding: 10px 0;
+      }
+      .copy{
+        flex:2;
+        color:#fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1rem;
+        margin-right: 10px;
+      }
+      .img{
+        width: 25px;
+        height: 12px;
+        background: #fff;
+      }
+      .btnWrap button,.clickNext{
+        background-color:#ff4119;
+        width: 30vw;
+        height: 5vh;
+        cursor: pointer;
+        border-radius: 1vh;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 1vh;
+        border: none;
+        font-size: 1rem;
+      }
+      /* 黑客帝国 */
+      *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body{
+            height: 100vh;
+            background-color: rgb(0, 0, 0);
+        }
+        canvas{
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
+  </head>
+  <body>
+    <div style="color: red">
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="loadingWrap">
+      <figure>
+        <div class="dot white"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </figure>
+      <div class="title">为您疯狂的计算返现中....</div>
+    </div>
+    <div class="contentFatherWrap">
+      <div class="contentWrap">
+        <textarea name="" id="searchContent" placeholder="粘贴你的淘宝商品链接"></textarea>
+        <div class="btnWrap">
+          <button onclick="clickBtn()">点击获取返现</button>
+        </div>
+      </div>
+    </div>
+    <div class="ticketWrapFather">
+      <div class="ticketWrap">
+
+        <div class="couperWrap">
+          <div class="price"> <span class="priceToken">¥&nbsp;</span><span class="priceContent"><%= ticketCount %></span></div>
+          <div class="content">
+            <span>复制以下口令 <image class="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAAUCAYAAADGIc7gAAAI4UlEQVRYR42YC4xU5RXHf+e7M7PLsvIS8IGKj6j1VSpR+0iaXRNfVZdl0SkxpNYmFaPsIKRQ02rdTlvfVR4zGN00qamPGBfLMru2WqkFRVu1VkDxURVJQ1lwARFddx73fqf57r0zOyya+iWTmbv3u995/M//nP9doW4pCPPT4zhqcEiy6313S7u6DPs2n4MGg5Lv+zDc09XqQYuVbNbWP3/QWem0R0+PFdDRe7SrNTHyt5FzorO7hIEBDzM4kYZAwn22wTLp9L1fZC98Jp02nD4oVZ/dI+JuOOO6oONwxL8L+CYiOxBzi6zsfU0XXnYm1qwHhhBeJ8HNsqxva+05F8DpeAw1Jmkeo+ykQne3H57pjDojXxBcNbBaorLrXRRhEnRxegyV4vOgY1ExGHYwqfFSyfaUa8Fnszr6XAdCNXipXmimLYtyK1ACGhBdJ7n+C3Vh+xKsvcfZQ2QY683F0yZscC7IWQingh6DkghTBHtQ+wriFRijj8ndhU/rAwydDirfQbUJsQaRd2RF4d1aQCXG45VPRu06IBUlQEooj2L0cFSPBHMYaocxZgfKAMi/MeZVtPiq5P5cCpNeF9idKDfVAkPXMVna2cMbwIlAAPpJBDATI3v4qLyG2C0gg4iMRbkE1VNjh9bhe/PkgTUfaTrtSU9PoJnZJ6HBBmBadIZsRXkJ9BTQqcDRIONjRB2CFVeMgIfIXmA/aAAyEdWjooKIl8gqyRU6o1KM4dPMnGPQ8u9BzgPdhXIVHq1YuTcKCi9EzR0k8jpilhHIn5j89Y8d/LXSzHyvAbxHULkyDv5hyfVd7XjlOKCLZh9PJfgbwvGx08nYLWdjJ+h2RD4A+w4msR2f7Rjvv3w6bg/ThywMWphiOIOAF4szsTyMuqoJfQsQM0Nya98Ko6055ZzubD+TZOp9KnY6Un4BZXJYgspW0DOAMQgb2dXY6hA4qGFUk7Rw1vlYfTbKMnvAtDhjoS0XmB88Dxwbo/oMnnRhZQ+lqf+R7m6H0Fdempn1LKoXxMkPSCS+IcvXvF2DUTNtf0DZLfm+pXpDuhlT3AjMiEvzUjxaCEIOguExfJZDogEhwPiKNYqaJMbfQyphKftbQq6G0chFsqrgAq0G5prR9BjRB2ko/YSg8SgsHkZS+IEBY/CMEviKcWcHNrq2En67+75divIDoBzyUXhCcn1zI5Y4Y52zr4BgdezEagJvAUk5F/zbEe5AZQtqNwHVshkGXMt2z5v4E5Wr6kt4yeuw/qtxYAJmnuTXPhYFNudE/PIGkGNi7hgkLCP3qY4P9/35KNjGjro2aEgPt9eAbsIzl8iKwu6QXqGxBR3fRnzHpW9FHGIjntcmy3v36+LLp+Gb51A9BZXVCO+BLo0Dc7ufA3kczFjwk2hiG559k0A3x11NEG+J5Hrd+URcrjwRI6YI76LyMuLQdVQ1ztEmVK+r2QAfkQejYK1LZLVbHMByAiLTSCR+KMv/OFCl1cgcu6a1keYJ1yJBF8rhiKyWXCGtizpOww/+itgXJdef1kzHDKz/AkJzhJjcIfnCz8OhG8+iCJXK27FjLpu/lHx/tjazDjQfgSaSSLLCOAbdfDqI6/PbmkjxEVBFaYgyU6W77/Oq49XQtKu1MSy97Ppi/b0IMacu2GDCrpVpb0NtAfiQBs6jbE5D7QoM29DQ2PEoF45kU1xT+UfYVKL5twkv+SS+/3oNMeV2WdV3c60DV0XB4vQ0/FIHmAbEjxSKJiz4zag4PldLv4LoryDxWdSd/Qg1V4qS2EWQXC3393x2SGDV4MK2nZk3DnvgFYQJNMnJDHuzIMgDHwMTQmOqDq1oibiB7vjwCTAF2EhCllKxrwBhNsHeJvmnbqkFVm39mY45qP/kKO581csqt3aQ0BZZ/tS2g5RHHaTRnMl0tKD+etD1ku8/X6PW3YiYCqUjNpDaNQPUDdimKGt6r6zqX6Kd7XMR24KX/C0mqFC2H8SzzyD6C8n1/+YQxDLpKVA5uxaJUUHFD5MaBI/WuqpTQ543D7X7UPFAWxA7DfU2Yby/Y7w3ZVnP8BeWYoiW04vGfxrlHIz+mtTEuyjud0i5ktiJJzNRbwrWd2i40nPrTsn3/Uwzs15DdabjE8kxOSrFwfi+49giyfevqKqPL4OkNk+70s3sLe6uJc9VRJMcGcqzzstuALMy6sBsJ+l1yPLeTfVohYVUkzrh7CqtBr04Lq0zEc+ggRusKRDHr7MRmYBa18ojxGAZknwCrTwCnAT8k1Tix5T9l+LgBSNXycrC4zX1EXK6ujaM/B44RdyA1iUdUyn62+uSV6SBY2luPMC+0juonjAi/eQByReu1650imxPpSqM4+ZxTSP79j6O0h6T8iFZ1fcjXTR7AoF9D9XJsRu9iLyJ6uI6o04puFnk1InjVAqR+0CvDlVLuMwlkl/7TDWw/4vYTenxDBUH6mwMk/CODsdPZ5tr+/Pj+aXgzZV875OHIrbw8uPA/A6rrtM5QlZQ0yKr1r4cUijTditKdmQQHuLW+xjuwZN/UdGnga2I7Eb1inhwfoLQIrn+zVH3dW1m8zgkWYdafGbZF0xThcahKQwHTrlUq+JzkjIDb/wApaGJULkeq2ch3hpsqgfxI4UzefyQZB8qRqV4Y8e1BH73iNCVHskXvl8r0XC+jb0WvAsQbQxf4dQeAH0DSb4M5i0SnlPdUCmdQWPDXorD3SBOvzksn5WVfRfVGodr8ZWiawzHReWkBweo4oa2UzXujaIq+dwo2BareovwKVYriIwJ39lCkS4T3TSTfOGBEeWx6PKZBHIfyncxiRZZuWbj6A42GqcaXzpnpZ1GQ9kE+hHoOSCT4v3v4cmVsqKwpbZ/wRwnrv8C4hx32T0UufDdDyfbRpaGzaoaqJNS7rerMPdxb/vjwLtJ8r13h77XOtFPZx3GsLQyKfVMVQmEpRi/rte/lkf/QpifCIl+Y/vF+MFtGPlapBSkjNp3QQog90u+sLO+DYck3186gUBSobj9csI550eWE9tftjxf8RMJSOyUXE/Yjf8HeUVUTki7ay4AAAAASUVORK5CYII=" src=""/>
+             领取</span>
+            <span class='kouling'></span>
+          </div>
+          <div class="copy">返现红包</div>
+        </div>
+
+        <div class="couperWrap">
+          <div class="price"> <span class="priceToken">¥&nbsp;</span><span class="priceContent"><%= ticketCount %></span></div>
+          <div class="content">
+            <span>复制以下口令 <image class="img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAAUCAYAAADGIc7gAAAI4UlEQVRYR42YC4xU5RXHf+e7M7PLsvIS8IGKj6j1VSpR+0iaXRNfVZdl0SkxpNYmFaPsIKRQ02rdTlvfVR4zGN00qamPGBfLMru2WqkFRVu1VkDxURVJQ1lwARFddx73fqf57r0zOyya+iWTmbv3u995/M//nP9doW4pCPPT4zhqcEiy6313S7u6DPs2n4MGg5Lv+zDc09XqQYuVbNbWP3/QWem0R0+PFdDRe7SrNTHyt5FzorO7hIEBDzM4kYZAwn22wTLp9L1fZC98Jp02nD4oVZ/dI+JuOOO6oONwxL8L+CYiOxBzi6zsfU0XXnYm1qwHhhBeJ8HNsqxva+05F8DpeAw1Jmkeo+ykQne3H57pjDojXxBcNbBaorLrXRRhEnRxegyV4vOgY1ExGHYwqfFSyfaUa8Fnszr6XAdCNXipXmimLYtyK1ACGhBdJ7n+C3Vh+xKsvcfZQ2QY683F0yZscC7IWQingh6DkghTBHtQ+wriFRijj8ndhU/rAwydDirfQbUJsQaRd2RF4d1aQCXG45VPRu06IBUlQEooj2L0cFSPBHMYaocxZgfKAMi/MeZVtPiq5P5cCpNeF9idKDfVAkPXMVna2cMbwIlAAPpJBDATI3v4qLyG2C0gg4iMRbkE1VNjh9bhe/PkgTUfaTrtSU9PoJnZJ6HBBmBadIZsRXkJ9BTQqcDRIONjRB2CFVeMgIfIXmA/aAAyEdWjooKIl8gqyRU6o1KM4dPMnGPQ8u9BzgPdhXIVHq1YuTcKCi9EzR0k8jpilhHIn5j89Y8d/LXSzHyvAbxHULkyDv5hyfVd7XjlOKCLZh9PJfgbwvGx08nYLWdjJ+h2RD4A+w4msR2f7Rjvv3w6bg/ThywMWphiOIOAF4szsTyMuqoJfQsQM0Nya98Ko6055ZzubD+TZOp9KnY6Un4BZXJYgspW0DOAMQgb2dXY6hA4qGFUk7Rw1vlYfTbKMnvAtDhjoS0XmB88Dxwbo/oMnnRhZQ+lqf+R7m6H0Fdempn1LKoXxMkPSCS+IcvXvF2DUTNtf0DZLfm+pXpDuhlT3AjMiEvzUjxaCEIOguExfJZDogEhwPiKNYqaJMbfQyphKftbQq6G0chFsqrgAq0G5prR9BjRB2ko/YSg8SgsHkZS+IEBY/CMEviKcWcHNrq2En67+75divIDoBzyUXhCcn1zI5Y4Y52zr4BgdezEagJvAUk5F/zbEe5AZQtqNwHVshkGXMt2z5v4E5Wr6kt4yeuw/qtxYAJmnuTXPhYFNudE/PIGkGNi7hgkLCP3qY4P9/35KNjGjro2aEgPt9eAbsIzl8iKwu6QXqGxBR3fRnzHpW9FHGIjntcmy3v36+LLp+Gb51A9BZXVCO+BLo0Dc7ufA3kczFjwk2hiG559k0A3x11NEG+J5Hrd+URcrjwRI6YI76LyMuLQdVQ1ztEmVK+r2QAfkQejYK1LZLVbHMByAiLTSCR+KMv/OFCl1cgcu6a1keYJ1yJBF8rhiKyWXCGtizpOww/+itgXJdef1kzHDKz/AkJzhJjcIfnCz8OhG8+iCJXK27FjLpu/lHx/tjazDjQfgSaSSLLCOAbdfDqI6/PbmkjxEVBFaYgyU6W77/Oq49XQtKu1MSy97Ppi/b0IMacu2GDCrpVpb0NtAfiQBs6jbE5D7QoM29DQ2PEoF45kU1xT+UfYVKL5twkv+SS+/3oNMeV2WdV3c60DV0XB4vQ0/FIHmAbEjxSKJiz4zag4PldLv4LoryDxWdSd/Qg1V4qS2EWQXC3393x2SGDV4MK2nZk3DnvgFYQJNMnJDHuzIMgDHwMTQmOqDq1oibiB7vjwCTAF2EhCllKxrwBhNsHeJvmnbqkFVm39mY45qP/kKO581csqt3aQ0BZZ/tS2g5RHHaTRnMl0tKD+etD1ku8/X6PW3YiYCqUjNpDaNQPUDdimKGt6r6zqX6Kd7XMR24KX/C0mqFC2H8SzzyD6C8n1/+YQxDLpKVA5uxaJUUHFD5MaBI/WuqpTQ543D7X7UPFAWxA7DfU2Yby/Y7w3ZVnP8BeWYoiW04vGfxrlHIz+mtTEuyjud0i5ktiJJzNRbwrWd2i40nPrTsn3/Uwzs15DdabjE8kxOSrFwfi+49giyfevqKqPL4OkNk+70s3sLe6uJc9VRJMcGcqzzstuALMy6sBsJ+l1yPLeTfVohYVUkzrh7CqtBr04Lq0zEc+ggRusKRDHr7MRmYBa18ojxGAZknwCrTwCnAT8k1Tix5T9l+LgBSNXycrC4zX1EXK6ujaM/B44RdyA1iUdUyn62+uSV6SBY2luPMC+0juonjAi/eQByReu1650imxPpSqM4+ZxTSP79j6O0h6T8iFZ1fcjXTR7AoF9D9XJsRu9iLyJ6uI6o04puFnk1InjVAqR+0CvDlVLuMwlkl/7TDWw/4vYTenxDBUH6mwMk/CODsdPZ5tr+/Pj+aXgzZV875OHIrbw8uPA/A6rrtM5QlZQ0yKr1r4cUijTditKdmQQHuLW+xjuwZN/UdGnga2I7Eb1inhwfoLQIrn+zVH3dW1m8zgkWYdafGbZF0xThcahKQwHTrlUq+JzkjIDb/wApaGJULkeq2ch3hpsqgfxI4UzefyQZB8qRqV4Y8e1BH73iNCVHskXvl8r0XC+jb0WvAsQbQxf4dQeAH0DSb4M5i0SnlPdUCmdQWPDXorD3SBOvzksn5WVfRfVGodr8ZWiawzHReWkBweo4oa2UzXujaIq+dwo2BareovwKVYriIwJ39lCkS4T3TSTfOGBEeWx6PKZBHIfyncxiRZZuWbj6A42GqcaXzpnpZ1GQ9kE+hHoOSCT4v3v4cmVsqKwpbZ/wRwnrv8C4hx32T0UufDdDyfbRpaGzaoaqJNS7rerMPdxb/vjwLtJ8r13h77XOtFPZx3GsLQyKfVMVQmEpRi/rte/lkf/QpifCIl+Y/vF+MFtGPlapBSkjNp3QQog90u+sLO+DYck3186gUBSobj9csI550eWE9tftjxf8RMJSOyUXE/Yjf8HeUVUTki7ay4AAAAASUVORK5CYII=" src=""/>
+             领取</span>
+            <span class='kouling'></span>
+          </div>
+          <div class="copy">优惠券</div>
+        </div>
+
+        <div class="clickNext" onclick="copyTick()">一键复制领取</div>
+        <div class="clickNext" onclick="clickNext()">接着找下一个</div>
+      </div>
+    </div>
+    <script type="text/javascript" src="https://res.wx.qq.com/t/wx_fed/cdn_libs/res/weui/1.2.3/weui.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      function clickBtn(){
+        let loadingWrapNode = document.getElementsByClassName('loadingWrap')[0]
+        let ticketWrapFatherNode = document.getElementsByClassName('ticketWrapFather')[0]
+        let contentWrapNode = document.getElementsByClassName('contentFatherWrap')[0]
+        let searchContentNode = document.getElementById('searchContent')
+
+        loadingWrapNode.style.display="block";
+        axios.post('/creatTaoLiJing', {content: searchContentNode.value}).then(function (response) {
+          console.log(response);
+          if(response.data.code == '-1'){
+            weui.alert('宝宝,该商品不支持提前返现,可以找客服小哥哥手动返现哦！客服微信： bobokeji520');
+          }
+          loadingWrapNode.style.display="none";
+          contentWrapNode.style.display="none";
+          ticketWrapFatherNode.style.display = "block"
+          setTimeout(()=>{
+            document.getElementsByClassName('kouling')[0].innerHTML = response.data.tpwd || '宝宝,该商家不支持返现'
+            document.getElementsByClassName('kouling')[1].innerHTML = response.data.tpwd || '宝宝,该商家无优惠券'
+            document.getElementsByClassName('priceContent')[0].innerHTML = response.data.returnMoney || 0
+            document.getElementsByClassName('priceContent')[1].innerHTML = response.data.couponPrice || 0
+          },0)
+        }).catch(function (error) {
+          weui.alert('解析内部返现失败，请重试');
+        });
+      }
+
+      function copyTick(){
+        var Url2=document.getElementsByClassName('kouling')[0].innerText;
+        var oInput = document.createElement('input');
+        oInput.value = Url2;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.className = 'oInput';
+        oInput.style.display='none';
+        weui.alert('复制成功,打开淘宝领券');
+      }
+
+      function clickNext(){
+        let ticketWrapFatherNode = document.getElementsByClassName('ticketWrapFather')[0]
+        let contentWrapNode = document.getElementsByClassName('contentFatherWrap')[0]
+        contentWrapNode.style.display="block";
+        ticketWrapFatherNode.style.display = "none"
+      }
+    </script>
+    <script>
+        /* 获取画布 */
+        var canvas = document.querySelector("#canvas");
+        var ctx = canvas.getContext('2d');
+        /* 定义一个字符串数组，后面字符串会从里随机选值 */
+        var text = "SAFAF1D56FLK43F7PHM76VC9XNJL23";
+        /* 定义 w为窗口宽度，h为窗体高度 */
+        var w=window.innerWidth;
+        var h=window.innerHeight;
+        /* 设置len为20，其为背景里每条字符串的长度 */
+        var len = 20;
+        /* 设置num为100，窗口一共显示100条字符串 */
+        var num = 100;
+        /* 定义数组，里面存取每条字符串的字符与位置 */
+        var arr=[];
+        /* 画布宽等于窗口宽 */
+        canvas.width=window.innerWidth;
+        /* 画布高等于窗口高 */
+        canvas.height=window.innerHeight;
+        /* 绑定窗口大小发生改变事件，重新绘制字符串数组，让canvas随时铺满浏览器可视区 */
+        window.onresize=resizeCanvas;
+        function resizeCanvas(){
+            w=canvas.width=window.innerWidth;
+            h=canvas.height=window.innerHeight;
+            /* 重新给全部字符串赋值 */
+            for(let j=0;j<num;j++){
+                    arr[j]={
+                        str:[],
+                 x: parseInt(w*Math.random()),
+                 y: parseInt(h*Math.random()-150)
+                    }
+                }
+            }       
+        resizeCanvas();
+         /* 初始化字符串数组 */
+         for(let i=0;i<num;i++){
+             /* 用.push方法给arr数组添加值 */
+             arr.push({
+                 /* 字符先为空 */
+                 str:[],
+                 /* x轴位置为窗口宽度乘上一个0带1的随机数 */
+                 x: parseInt(w*Math.random()),
+                 /* y轴位置为窗口高度乘上一个0带1的随机数，再减个150把，可以为负数 */
+                 y: parseInt(h*Math.random()-150)
+             })
+         }
+
+        /* 绘制每条字符串 */
+        function txt(){
+            /* 给个循环，共绘制num条 */
+            for(let i=0;i<num;i++){
+                /* 设置变量letter为当前arr数组里的第i条字符串 */
+                var letter = arr[i];
+                /* 让字符串的字符为空 */
+                letter.str = [];
+                /* 给个循环，一个字符一个字符的拼接成字符串 */
+                for(let k=0;k<len;k++){
+                    /* 随机选取text里的一个字符 */
+                    letter.str.push(text[Math.floor(Math.random() * text.length)]);
+                }
+                /* 再来循环，开始绘制渲染字符串的每个字符 */
+                for(let j=0;j<len;j++){
+                    if(j==len-1){
+                        /* 第一个字符为白色 */
+                        ctx.fillStyle = `rgb(255, 255, 255)`;
+                    }else{
+                        /* 后面的为绿色，慢慢变不透明 */
+                        ctx.fillStyle = `rgba(0, 255, 21,${j*0.15})`;
+                    } 
+                        /* 渲染字符 */
+                     ctx.font = "20px FangSong";
+                     ctx.fillText(letter.str[j],letter.x,letter.y+j*15);
+                }
+            }
+            /* 调用更新 */
+            move();
+        }
+         
+        /* 让字符串移动，若某字符串出了可视区，则重新生成 */
+        function move(){
+            /* 来个循环，给全部字符串更新位置 */
+            for(let j=0;j<num;j++){
+                /* y轴位置加3 */
+                arr[j].y=arr[j].y+3;
+                /* 如果改字符已经走出窗口了重新赋值 */
+                if(arr[j].y>=h){
+                    arr[j]={
+                        str:[],
+                 x: parseInt(w*Math.random()),
+                 y: parseInt(h*Math.random()-150)
+                    }
+                }
+            }
+        }
+
+         setInterval(function(){
+             /* 清屏 */
+            ctx.clearRect(0,0,w,h);
+            /* 渲染 */
+            move();
+            /* 更新 */
+            txt();
+         },50); 
+    </script>
+  </body>
+</html>

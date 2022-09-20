@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/2.0.1/weui.min.css">
+  <title>登录</title>
+  <style>
+    body{
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="weui-form">
+      <div class="weui-form__control-area">
+        <div class="weui-cells__group weui-cells__group_form">
+          <div id='loginTitle' class="weui-cells__title">登录账号</div>
+          <div class="weui-cells">
+            <label for="js_input1" class="weui-cell weui-cell_active">
+              <div class="weui-cell__hd"><span id="zhanghao" class="weui-label">账号</span></div>
+              <div class="weui-cell__bd">
+                <input id="js_input1" class="weui-input" placeholder="填写本人账号"/>
+              </div>
+            </label>
+            <label for="js_input2" class="weui-cell weui-cell_active">
+              <div class="weui-cell__hd"><span id="passWord" class="weui-label">密码</span></div>
+              <div class="weui-cell__bd">
+                <input id="js_input2" class="weui-input" type="password" placeholder="填写密码"/>
+              </div>
+            </label>
+            <label id="invitationCode" for="js_input2" class="weui-cell weui-cell_active" style="display: none">
+              <div class="weui-cell__hd"><span id="passWord" class="weui-label">邀请码</span></div>
+              <div class="weui-cell__bd">
+                <input id="js_input3" class="weui-input" placeholder="请填写你的邀请码"/>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    <br/>
+      <div class="weui-form__opr-area">
+        <a role="button"  aria-disabled="true" class="weui-btn weui-btn_primary" href="javascript:" id="showTooltips" onclick="clickLogin()">确定</a>
+      </div>
+      <div class="weui-form__extra-area">
+        <div class="weui-footer">
+          <p class="weui-footer__links">
+            <a id='changeMode' islogin='true' href="javascript:" aria-disabled="true" class="weui-footer__link" onclick="generateUser()">还没有账号？点击此处生成账号</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    <div role="alert" id="js_toast" style="display:none;">
+      <div class="weui-mask_transparent"></div>
+      <div class="weui-toast">
+        <i class="weui-icon-success-no-circle weui-icon_toast"></i>
+        <p class="weui-toast__content">已完成</p>
+      </div>
+    </div>
+  </div>
+  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"> </script>
+  <script type="text/javascript" src="https://res.wx.qq.com/t/wx_fed/cdn_libs/res/weui/1.2.3/weui.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script type="text/javascript">
+    let changeModeDom = $('#changeMode')
+    let js_input1Dom = $('#js_input1')
+    let js_input2Dom = $('#js_input2')
+    let js_input3Dom = $('#js_input3')
+    function generateUser(){
+      let passWordDom = $('#passWord')
+      let loginTitleDom = $('#loginTitle')
+      let invitationCodeDom = $('#invitationCode')
+      if(changeModeDom.attr('islogin') === "true"){
+        js_input1Dom.attr('placeholder', '给自己的账号取个名字')
+        changeModeDom.text('我有账号，直接登录')
+        loginTitleDom.text('注册账号')
+        changeModeDom.attr('islogin', "false")
+        invitationCodeDom.attr('style', '')
+      }else{
+        js_input1Dom.attr('placeholder', '填写本人账号')
+        changeModeDom.text('还没有账号？点击此处生成账号')
+        loginTitleDom.text('登录账号')
+        changeModeDom.attr('islogin', "true")
+        invitationCodeDom.attr('style', 'display: none')
+      }
+    }
+
+    function clickLogin(){
+      // 获取输入框里的内容
+      let useAccount = js_input1Dom.val()
+      let passWord = js_input2Dom.val()
+      let weUid = js_input3Dom.val()
+      if(changeModeDom.attr('islogin') === "true"){
+        // 登录请求
+        axios.post('/userInfor/login', { user_password: passWord, user_account: useAccount }).then((res)=>{
+          let resultData = res.data
+          if(resultData.hasPermision){
+            // window.location.href = `http://localhost:8888/userInfor?resultData=${resultData.weUid}` // 本地测试
+            window.location.href = `https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${resultData.weUid}` // 生产环境
+          }else{
+            weui.alert('用户名或密码错误请重试！')
+          }
+        })
+      }else{
+        // 绑定邀请码
+        axios.post('/bindInvitationCode/bindCode', { user_password: passWord, user_account: useAccount, wechat_uid: weUid }).then((res)=>{
+          let resData = res.data
+          switch (resData.bandFlag) {
+            case 'invalideCode':
+              weui.alert('邀请码不存在！')
+              break
+            case 'fomateFailed':
+              weui.alert('用户名或密码的格式不对！')
+              break
+            case 'hasbinded':
+              weui.alert('该邀请码已被绑定！')
+              break
+            case 'existedAccount':
+              weui.alert('该用户名已被注册！')
+              break
+            default:
+              weui.alert('注册成功,可以登录了哦！')
+          }
+        })
+      }
+    }
+  </script>
+</body>
+</html>
