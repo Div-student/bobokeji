@@ -76,7 +76,7 @@ app.use(async ctx => {
             "title":"拼夕夕内测返现教程",
             "description":"支持小于1元返现、下单即可查看返现",
             "picurl":"https://mmbiz.qpic.cn/mmbiz_png/3FcHC1peJGeZNjSnqtYiaaWRLkRicxIbzoEY3SU8zs3eKgLAIQuhMVoaTyAXPHL6jCictx7ia3YzEKk5jVRu7Ehm5Q/0?wx_fmt=png",
-            "url":"https://mp.weixin.qq.com/s/5D-3kcmxuRB3fzV_xJrEMw"
+            "url":"https://mp.weixin.qq.com/s/moynPRM2l3sAhfC42sDWnA"
           }
         ]
         sendMsgToClient('news', xmlJson)
