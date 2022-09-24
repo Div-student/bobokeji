@@ -49,7 +49,7 @@
   <div id="mask" style="display: none"><div>数据加载中...</div></div>
   <div class="page">
     <div class="page__hd">
-      <h1 class="page__title">我的订单</h1>
+      <h1 id = 'pageTitle' class="page__title">我的订单</h1>
       <p class="page__desc">订单预览 <span id="syncOrder" style="visibility:hidden" onclick="syncOrderList()">手动同步订单</span></p>
       <div id="nodata" style="display: none" class="weui-loadmore weui-loadmore_line">
         <span class="weui-loadmore__tips">暂无订单数据</span>
@@ -65,9 +65,15 @@
     let pageSize = 5;
     function viewMore(){
       let domMask = document.getElementById('mask').style.display = ''
+      // 获取weui和用户名
+      let params = location.search.split('&')
+      let weUid = params[0].split('=')[1]
+      let weCount = params[1].split('=')[1]
+      let pageTitle = $('#pageTitle')
+      pageTitle.text(weCount)
       // 发送请求
-      let wechat_uid = location.search.split('=')[1]
-      if(wechat_uid === "oF-RA6fbdaY0mXnMW5lzgWVlpOXM"){
+      let wechat_uid = weUid
+      if(wechat_uid === "oF-RA6fbdaY0mXnMW5lzgWVlpOXM" || wechat_uid === "oBHe40ybW1KyGblscxI4uTaGExWo"){
         let syncList = $('#syncOrder')
         syncList.attr('style', 'visibility: visible')
       }
@@ -100,7 +106,7 @@
                       <span class="weui-form-preview__value">¥${element.promotion_amount/100}</span>
                     </div>
                     <div id="p4" class="weui-form-preview__item">
-                      <label class="weui-form-preview__label">订单状态</label>
+                      <label class="weui-form-preview__label">${element.price_compare_status===1?'订单状态(比价单)':'订单状态(正常单)'}</label>
                       <span class="weui-form-preview__value">${element.order_status_desc}</span>
                     </div>
                 </div>

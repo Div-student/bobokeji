@@ -135,7 +135,9 @@ app.use(async ctx => {
         ctx.body = resMsg
       }else if(temp.Event[0] === "subscribe"){
         xmlJson.type = 'text'
-        xmlJson.sendMsg = '❤️谢谢你长得这么好看还关注我❤️'
+        xmlJson.sendMsg = `❤️谢谢你长得这么好看还关注我❤️\n
+        <a href="https://mp.weixin.qq.com/s/SF_gYOA9_AbcQPv8535pgA">淘宝返现操作指南</a>\n
+        <a href="https://mp.weixin.qq.com/s/hRhiX80HfpYqYe1xWgFTsQ">拼夕夕返现操作指南</a>`
         let resMsg = getResponse(xmlJson)
         ctx.body = resMsg
       }
