@@ -68,7 +68,6 @@ let formateTime =  (time,fmt) =>{
 let createTaoLingjing = async (content) => {
   try{
     let res = await getProductInfo.jsonToXml(content)
-    console.log('res===>', res)
     if(res.title){
       let couponPrice = res.amount
       let actualPrice = res.price

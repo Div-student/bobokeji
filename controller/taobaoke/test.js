@@ -43,7 +43,7 @@ let getTwd = async (content) => {
   try{
     let statTime = new Date().getTime()
     let res = await queryApi(url)
-    console.log('淘口令转换接口耗时===>', new Date().getTime() - statTime) 
+    console.log('淘口令转换接口耗时===>', new Date().getTime() - statTime)
     if(res.data){
       let prd = res.data
       showTokenInfor.tpwd = prd.tpwd
@@ -62,18 +62,20 @@ let getTwd = async (content) => {
 // 获取商品价格 优惠圈价格 商品名称 
 let productDetail = (content) => {
   return new Promise( async(resolve, rejected)=>{
-    let proUrl = `https://openapi.dataoke.com/api/tb-service/parse-content?content=${encodeURIComponent(content)}&version=v1.0.0`
+    console.log('encodeURIComponent(content)===>11', encodeURIComponent(content))
+    // let proUrl = `https://openapi.dataoke.com/api/tb-service/parse-content?content=${encodeURIComponent(content)}&version=v1.0.0`
+    let proUrl = `https://openapi.dataoke.com/api/dels/kit/contentParse?content=${encodeURIComponent(content)}&version=v1.0.0`
     try{
       let statTime = new Date().getTime()
       let res = await queryApi(proUrl)
-      console.log('获取商品详情接口耗时===>', new Date().getTime() - statTime) 
-      if(res.data && res.data.originInfo){
-        let proInfor = res.data.originInfo
-        showTokenInfor.title = proInfor.title
+      console.log('获取商品详情接口耗时1===>', new Date().getTime() - statTime)
+      if(res.data && res.data.list){
+        let proInfor = res.data.list[0]
+        showTokenInfor.title = proInfor.itemName
         showTokenInfor.startFee = proInfor.startFee
-        showTokenInfor.price = proInfor.price
-        showTokenInfor.amount = proInfor.amount
-        showTokenInfor.goodsId = res.data.goodsId
+        showTokenInfor.price = proInfor.actualPrice
+        showTokenInfor.amount = proInfor.couponPrice
+        showTokenInfor.goodsId = proInfor.itemId
       }
       resolve()
     }catch(error){

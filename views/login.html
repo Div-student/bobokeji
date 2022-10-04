@@ -100,8 +100,8 @@
         axios.post('/userInfor/login', { user_password: passWord, user_account: useAccount }).then((res)=>{
           let resultData = res.data
           if(resultData.hasPermision){
-            // window.location.href = `http://localhost:8888/userInfor?resultData=${resultData.weUid}&useAccount=${useAccount}` // 本地测试
-            window.location.href = `https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${resultData.weUid}&useAccount=${useAccount}` // 生产环境
+            window.location.href = `http://localhost:8888/userInfor?resultData=${resultData.weUid}&useAccount=${useAccount}` // 本地测试
+            // window.location.href = `https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${resultData.weUid}&useAccount=${useAccount}` // 生产环境
           }else{
             weui.alert('用户名或密码错误请重试！')
           }
