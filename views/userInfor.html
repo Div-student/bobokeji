@@ -65,12 +65,9 @@
     let pageSize = 5;
     function viewMore(){
       let domMask = document.getElementById('mask').style.display = ''
-      // 获取weui和用户名
+      // 获取weui
       let params = location.search.split('&')
       let weUid = params[0].split('=')[1]
-      let weCount = params[1].split('=')[1]
-      let pageTitle = $('#pageTitle')
-      pageTitle.text(weCount)
       // 发送请求
       let wechat_uid = weUid
       if(wechat_uid === "oF-RA6fbdaY0mXnMW5lzgWVlpOXM" || wechat_uid === "oBHe40ybW1KyGblscxI4uTaGExWo"){

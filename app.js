@@ -61,11 +61,11 @@ app.use(async ctx => {
       let amount = ''
       if(xmlJson.Content === '申请内测'){
         xmlJson.type = 'text'
-        xmlJson.sendMsg = `拼夕夕内测申请成功! \n你的内测邀请码为：${xmlJson.FromUserName}`
+        xmlJson.sendMsg = `拼夕夕内测申请成功，下单后即可查看返现订单！`
         let createRes = await creatUserInfor(xmlJson.FromUserName)
 
         if(createRes === 'hasPermission'){
-          xmlJson.sendMsg = `你的内测邀请码为：${xmlJson.FromUserName}`
+          xmlJson.sendMsg = `你已拥有内测名额，无需重复申请！`
         }
         let resMsg = getResponse(xmlJson)
         ctx.body = resMsg
@@ -103,7 +103,9 @@ app.use(async ctx => {
           if(pddRes && pddRes.promotion_rate > 0){
             amount = pddRes.has_coupon?`优惠券: ${pddRes.coupon_discount.toFixed(2)}\n`:''
             returnMoney = ((pddRes.min_group_price - pddRes.coupon_discount)*(pddRes.promotion_rate/1000)).toFixed(2)
-            sendMsg = amount + `券后价格: ${(pddRes.min_group_price - pddRes.coupon_discount).toFixed(2)}\n额外返现: ${returnMoney}\n------------------\n<a href="${pddRes.urlWithGoodSign}">点击领取返现</a> -> 拼多多下单`
+            sendMsg = amount + `券后价格: ${(pddRes.min_group_price - pddRes.coupon_discount).toFixed(2)}\n额外返现: ${returnMoney}\n------------------\n<a href="${pddRes.urlWithGoodSign}">点击领取返现</a> -> 拼多多下单
+            \n*********************
+            \n<a href="https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${xmlJson.FromUserName}">点击查看订单返现</a>`
           }
           xmlJson.type = 'text'
           xmlJson.sendMsg = sendMsg

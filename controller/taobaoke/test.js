@@ -71,11 +71,11 @@ let productDetail = (content) => {
       console.log('获取商品详情接口耗时1===>', new Date().getTime() - statTime)
       if(res.data && res.data.list){
         let proInfor = res.data.list[0]
-        showTokenInfor.title = proInfor.itemName
-        showTokenInfor.startFee = proInfor.startFee
-        showTokenInfor.price = proInfor.actualPrice
-        showTokenInfor.amount = proInfor.couponPrice
-        showTokenInfor.goodsId = proInfor.itemId
+        showTokenInfor.title = proInfor?.itemName
+        showTokenInfor.startFee = proInfor?.startFee
+        showTokenInfor.price = proInfor?.actualPrice
+        showTokenInfor.amount = proInfor?.couponPrice
+        showTokenInfor.goodsId = proInfor?.itemId
       }
       resolve()
     }catch(error){
