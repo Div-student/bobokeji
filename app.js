@@ -21,6 +21,7 @@ const { createTaolijing } = require('./controller/taobaoke/createTaolijing')
 const { sendMsgToClient } = require('./controller/weixinapi/sendMsgToClient')
 const { creatUserInfor } = require('./controller/pddPromotion/creatUserInfo')
 const { getGoodsDetail } = require('./controller/duoduoke/pddPromotionApi')
+const { coverJDurl } = require('./controller/jdPromotion/changeJDUrl')
 
 
 const router = new Router()
@@ -54,7 +55,9 @@ app.use(async ctx => {
       let autoJsLearn = /^(学习|资料)+[0-9]*$/
       let autoMatch = xmlJson.Content.match(autoJsLearn)
       let pddEXP = /(\bgoodsid\b|\bpxq_secret_key\b)/
+      let jdEXP = /(\bjd\.com\b)/
       let isPDDlind = pddEXP.test(xmlJson.Content)
+      let isJDlink = jdEXP.test(xmlJson.Content)
 
       let sendMsg = '亲，该商家无活动'
       let returnMoney = ''
@@ -105,7 +108,24 @@ app.use(async ctx => {
             returnMoney = ((pddRes.min_group_price - pddRes.coupon_discount)*(pddRes.promotion_rate/1000)).toFixed(2)
             sendMsg = amount + `券后价格: ${(pddRes.min_group_price - pddRes.coupon_discount).toFixed(2)}\n额外返现: ${returnMoney}\n------------------\n<a href="${pddRes.urlWithGoodSign}">点击领取返现</a> -> 拼多多下单
             \n*********************
-            \n<a href="https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${xmlJson.FromUserName}">点击查看订单返现</a>`
+            \n<a href="https://wechatbi.bobozhaoquan.cn/userInfor?resultData=${xmlJson.FromUserName}">点击查看我的订单</a>
+            `
+          }
+          xmlJson.type = 'text'
+          xmlJson.sendMsg = sendMsg
+          sendMsgToClient('text', xmlJson)
+        })
+      }else if(isJDlink){
+        ctx.body = 'success'
+        // 提取字符串中的网址
+        const reg = /(https?|http):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
+        const strValue = xmlJson.Content.match(reg);
+        coverJDurl(strValue[0]).then(jDInfor => {
+          console.log('jDInfor===>', jDInfor)
+          amount = jDInfor.amount?`优惠券: ${jDInfor.amount}\n`:''
+          if(jDInfor.commission > 0){
+            returnMoney = (jDInfor.commission*0.85).toFixed(2)
+            sendMsg = `商品名称: ${jDInfor.title.substr(0,10)}...\n${amount}券后价格: ${jDInfor.price}\n额外返现: ${returnMoney}\n------------------\n<a href="${jDInfor.shortUrl || jDInfor.longUrl}">点击领券下单</a>`
           }
           xmlJson.type = 'text'
           xmlJson.sendMsg = sendMsg
