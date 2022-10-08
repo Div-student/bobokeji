@@ -1,4 +1,5 @@
 const dtkSdk = require('dtk-nodejs-api-sdk');
+const { operateTable } = require('../../dataBase/index')
 
 /*
  *  @checkSign: 1 默认老版本验签  2 新版验签
@@ -7,14 +8,13 @@ const dtkSdk = require('dtk-nodejs-api-sdk');
  */ 
 const UNIONID = '1000438404' // 京东联盟ID https://union.jd.com/user
 const sdk = new dtkSdk({appKey:'5ee62b32658a6',appSecret:'f1506316f0e0358b941c3606423db75f',checkSign:2});
-const tkl = '88啊7C4r2byfJvp嘻 https://m.tb.cn/h.f9wuQzx?sm=323733  结义车载吸尘器车用无线充电家用两用汽车内小型大功率强力手持机'
 
 // 封装 promise
-let queryApi = (uri) => {
+let queryApi = (uri, paramObj) => {
   return new Promise((resolve, reject) => {
     sdk.request(uri,{
       method:"GET",
-      form:{pageId:"1", pageSize:20, version:"v1.0.0"}
+      form:{...paramObj}
     }).then(res => {resolve(res)}, error => {
       reject(error)
     })
@@ -36,16 +36,18 @@ let showTokenInfor = {
 
 // 解析JD商品ID 1000438404
 let getSkuid = async (content) => {
-  let url = `https://openapi.dataoke.com/api/dels/jd/kit/parseUrl?url=${content}&version=v1.0.0`
+  let url = `https://openapi.dataoke.com/api/dels/jd/kit/parseUrl`
   try{
     let statTime = new Date().getTime()
-    let res = await queryApi(url)
+    let res = await queryApi(url, {url:content, version:"v1.0.0"})
     console.log('京东商品转链接口耗时===>', new Date().getTime() - statTime)
+    console.log('京东商品转链接口耗时id===>', res)
     if(res.data){
       let {skuId, itemUrl, hasCoupon} = res.data;
       showTokenInfor.goodsId = skuId;
     }else{
-      showTokenInfor.commissionRate = 0
+      showTokenInfor.commission = 0
+      showTokenInfor.goodsId = ''
     }
   }catch(error){
     console.log(error)
@@ -55,19 +57,22 @@ let getSkuid = async (content) => {
 // 获取京东商品详情信息
 let productDetail = async (content) => {
   await getSkuid(content)
-  let proUrl = `https://openapi.dataoke.com/api/dels/jd/goods/search?skuIds=${showTokenInfor.goodsId}&version=v1.0.0`
+  let proUrl = `https://openapi.dataoke.com/api/dels/jd/goods/search`
   try{
-    let statTime = new Date().getTime()
-    let res = await queryApi(proUrl)
-    console.log('获取京东商品详情信息接口耗时1===>', new Date().getTime() - statTime)
-    if(res.data && res.data.list){
-      let proInfor = res.data.list[0]
-      showTokenInfor.commission = proInfor?.couponCommission
-      showTokenInfor.commissionRate = proInfor?.commissionShare
-      showTokenInfor.title = proInfor?.skuName
-      showTokenInfor.startFee = proInfor?.price
-      showTokenInfor.price = proInfor?.lowestCouponPrice
-      showTokenInfor.amount = showTokenInfor.startFee - showTokenInfor.price
+    if(showTokenInfor.goodsId){
+      let statTime = new Date().getTime()
+      let res = await queryApi(proUrl, {skuIds:showTokenInfor.goodsId, version:"v1.0.0"})
+      console.log('获取京东商品详情信息接口耗时1===>', new Date().getTime() - statTime)
+      console.log('获取京东商品详情信息接口耗时1res===>', res)
+      if(res.data && res.data.list){
+        let proInfor = res.data.list[0]
+        showTokenInfor.commission = proInfor?.couponCommission
+        showTokenInfor.commissionRate = proInfor?.commissionShare
+        showTokenInfor.title = proInfor?.skuName
+        showTokenInfor.startFee = proInfor?.price
+        showTokenInfor.price = proInfor?.lowestCouponPrice
+        showTokenInfor.amount = showTokenInfor.startFee - showTokenInfor.price
+      }
     }
   }catch(error){
     console.log(error)
@@ -75,12 +80,17 @@ let productDetail = async (content) => {
 }
 
 // 京东商品转链
-let changeToSelfUrl = async (content) => {
-  let url = `https://openapi.dataoke.com/api/dels/jd/kit/promotion-union-convert?unionId=${UNIONID}&materialId=${content}&version=v1.0.0`
+let changeToSelfUrl = async (content, subUnionId) => {
+  // 查询用户微信公众的openID对应的user_id
+  let sql = `select * from user where wechat_uid='${subUnionId}'`
+  let userInfo = await operateTable(sql)
+
+  let url = `https://openapi.dataoke.com/api/dels/jd/kit/promotion-union-convert`
   try{
     let statTime = new Date().getTime()
-    let res = await queryApi(url)
+    let res = await queryApi(url, {unionId:UNIONID, materialId:content, positionId:userInfo[0].user_id, version:"v1.0.0"})
     console.log('解析JD商品ID接口耗时===>', new Date().getTime() - statTime)
+    console.log('解析JD商品ID接口耗时===>res', res)
     if(res.data){
       let { shortUrl, longUrl } = res.data;
       showTokenInfor.longUrl = longUrl;
@@ -89,13 +99,13 @@ let changeToSelfUrl = async (content) => {
       showTokenInfor.commissionRate = 0
     }
   }catch(error){
-    console.log(error)
+    console.log("error==>", error)
   }
 }
 
-exports.coverJDurl = tkls => {
+exports.coverJDurl = (tkls,subUnionId) => {
   return new Promise((resolve, rejected)=>{
-    Promise.all([productDetail(tkls), changeToSelfUrl(tkls)]).then(res=>{
+    Promise.all([productDetail(tkls), changeToSelfUrl(tkls, subUnionId)]).then(res=>{
       resolve(showTokenInfor)
     })
   })

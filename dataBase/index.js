@@ -41,7 +41,7 @@ const insertTable = async (tableName, fieds, Values) => {
 }
 exports.insertTable = insertTable
 
-// operateTable("SELECT * FROM user") // 查询
-// operateTable("delete FROM pdd_goods_list where order_receive_time = 0") // 删除
-// operateTable(`update pdd_goods_list set wechat_uid='oF-RA6fbdaY0mXnMW5lzgWVlpOXM' where order_receive_time=0`)
-// insertTable('sync_flag',["lastsync_time"], [{lastsync_time: Math.floor(new Date('2022-09-11 06:00:00').getTime()/1000) - 1000}])
+// operateTable("SELECT * FROM user") // 查询 Math.floor(currentTime/1000)
+// operateTable("delete FROM user where user_logo_url= 'www.baidu.com'") // 删除
+// operateTable(`update sync_flag set lastsync_time=${new Date().getTime()} where sync_type='JD'`) // 更新
+// insertTable('sync_flag',["lastsync_time", "sync_type"], [{lastsync_time: new Date('2022-10-06 13:30:00').getTime()}]) // 新增

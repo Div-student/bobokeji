@@ -117,15 +117,17 @@ app.use(async ctx => {
         })
       }else if(isJDlink){
         ctx.body = 'success'
+        await creatUserInfor(xmlJson.FromUserName)
         // 提取字符串中的网址
         const reg = /(https?|http):\/\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]/g;
         const strValue = xmlJson.Content.match(reg);
-        coverJDurl(strValue[0]).then(jDInfor => {
-          console.log('jDInfor===>', jDInfor)
+        coverJDurl(strValue[0], xmlJson.FromUserName).then(jDInfor => {
           amount = jDInfor.amount?`优惠券: ${jDInfor.amount}\n`:''
           if(jDInfor.commission > 0){
-            returnMoney = (jDInfor.commission*0.85).toFixed(2)
-            sendMsg = `商品名称: ${jDInfor.title.substr(0,10)}...\n${amount}券后价格: ${jDInfor.price}\n额外返现: ${returnMoney}\n------------------\n<a href="${jDInfor.shortUrl || jDInfor.longUrl}">点击领券下单</a>`
+            returnMoney = (jDInfor.commission*0.9).toFixed(2)
+            sendMsg = `商品名称: ${jDInfor.title.substr(0,10)}...\n${amount}券后价格: ${jDInfor.price}\n额外返现: ${returnMoney}\n------------------\n<a href="${jDInfor.shortUrl || jDInfor.longUrl}">点击领券下单</a>
+            \n*********************
+            \n<a href="https://wechatbi.bobozhaoquan.cn/JDList?resultData=${xmlJson.FromUserName}">点击查看我的订单</a>`
           }
           xmlJson.type = 'text'
           xmlJson.sendMsg = sendMsg
@@ -159,7 +161,8 @@ app.use(async ctx => {
         xmlJson.type = 'text'
         xmlJson.sendMsg = `❤️谢谢你长得这么好看还关注我❤️\n
         <a href="https://mp.weixin.qq.com/s/SF_gYOA9_AbcQPv8535pgA">淘宝返现操作指南</a>\n
-        <a href="https://mp.weixin.qq.com/s/hRhiX80HfpYqYe1xWgFTsQ">拼夕夕返现操作指南</a>`
+        <a href="https://mp.weixin.qq.com/s/hRhiX80HfpYqYe1xWgFTsQ">拼夕夕返现操作指南</a>\n
+        <a href="https://mp.weixin.qq.com/s/NV840qYhzhBN7JTxW5ynPA">京东返现操作指南</a>`
         let resMsg = getResponse(xmlJson)
         ctx.body = resMsg
       }
@@ -189,6 +192,11 @@ router.get('/login', async ctx => {
     'kouling': '2￥nR0lXL0fBl3￥/',
     'ticketCount': '4'
   })
+})
+
+// 微信公众号后端页面渲染--京东订单列表
+router.get('/JDList', async ctx => {
+  await ctx.render('JDList',{})
 })
 
 
@@ -229,6 +237,14 @@ router.use('/bindInvitationCode', bindInvitationCode.routes())
 // 手动同步拼多多订单 api: /manuaulGetOrderList/get
 const manuaulGetOrderList = require('./controller/pddPromotion/manuaulGetOrderList')
 router.use('/manuaulGetOrderList', manuaulGetOrderList.routes())
+
+
+/**
+ * 京东相关接口
+ */
+// 根据用户的wechat_uid获取JD订单列表 api: /jdOrderList/get
+const getJdOrderList = require('./controller/jdPromotion/getOrderList')
+router.use('/jdOrderList', getJdOrderList.routes())
 
 // -----------------------------------
 
