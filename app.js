@@ -139,7 +139,7 @@ app.use(async ctx => {
           amount = taobaokeInfor.amount?`优惠券: ${taobaokeInfor.amount}\n`:''
           if(taobaokeInfor.commissionRate > 0){
             returnMoney = ((taobaokeInfor.price)*(taobaokeInfor.commissionRate)*0.9).toFixed(2)
-            sendMsg = amount + `券后价格: ${taobaokeInfor.price}\n额外返现: ${returnMoney}\n------------------\n${taobaokeInfor.longTpwd}Tao@ba0下单`
+            sendMsg = amount + `券后价格: ${taobaokeInfor.price}\n额外返现: ${returnMoney}\n------------------\n${ taobaokeInfor.tpwd + taobaokeInfor.title }Tao@ba0下单`
           }
           xmlJson.type = 'text'
           xmlJson.sendMsg = sendMsg
