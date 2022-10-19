@@ -73,10 +73,6 @@ let createTaoLingjing = async (content) => {
       let actualPrice = res.price
       let commissionRate = res.commissionRate
       let returnMoney = Number(((actualPrice * commissionRate)*0.9).toFixed(2))
-      console.log('优惠券', couponPrice)
-      console.log('券后价', actualPrice)
-      console.log('返现比率', commissionRate)
-      console.log('最终返现', returnMoney)
       if(returnMoney<=1){
         console.log('(actualPrice*commissionRate)*0.9===>', (actualPrice*commissionRate)*0.9)
         return {}
@@ -100,15 +96,11 @@ let createTaoLingjing = async (content) => {
       }
 
       try{
-        console.log('createTaolijingParam===>',createTaolijingParam)
         // 创建淘礼金并且获取领取淘礼金链接
         let result = await requestTaoBaoApi('taobao.tbk.dg.vegas.tlj.create',createTaolijingParam)
-        console.log('result===>', result)
         let taolijinUrl = result.result.model.send_url
-        console.log('taolijinUrl===>', taolijinUrl)
         // 将淘礼金链接转换成淘口令
         let taokoulin = await requestTaoBaoApi('taobao.tbk.tpwd.create',{ url: taolijinUrl })
-        console.log('taokoulin===>', taokoulin)
 
         let taolijingres ={}
         if(result.code == "-1"){

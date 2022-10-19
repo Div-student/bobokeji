@@ -210,7 +210,6 @@ router.post('/creatTaoLiJing', async ctx => {
   }
   if(searchContent){
     taolijingInfo = await createTaolijing(searchContent)
-    console.log('taolijingInfo===>', taolijingInfo)
   }
   ctx.body = taolijingInfo
 })
