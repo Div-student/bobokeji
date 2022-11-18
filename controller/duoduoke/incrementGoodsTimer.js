@@ -1,3 +1,4 @@
+const schedule = require("node-schedule")
 const { incrementList } = require('./pddPromotionApi')
 const { insertTable, operateTable } = require('../../dataBase/index')
 
@@ -8,9 +9,11 @@ const getIncrementTimer = async () => {
   
   let start_time = lastModifyRes[0]?.lastsync_time || Math.floor((currentTime - 5*60*1000)/1000)
   let end_time = Math.floor(currentTime/1000)
-  // let end_time = Math.floor(new Date('2022-09-11 22:00:00').getTime()/1000)
-
+  // let start_time = Math.floor(new Date('2022-11-18 23:16:00').getTime()/1000)
+  // let end_time = Math.floor(new Date('2022-11-18 23:17:00').getTime()/1000)
+  console.log('start_timePDD', start_time, end_time)
   let { order_list } = await incrementList(start_time, end_time)
+  console.log('order_list===>', order_list)
   let orederSn = []
   let orderSnMap = {}
   let resultList = order_list.map(res => {
@@ -76,6 +79,13 @@ const getIncrementTimer = async () => {
 }
 
 // 每5分钟执行一次定时任务拉去最想的拼多多订单列表
-setInterval(() => {
+// setInterval(() => {
+//   getIncrementTimer()
+// }, 300000);
+
+
+schedule.scheduleJob('*/3 * * * *',function(){
   getIncrementTimer()
-}, 300000);
+})
+
+// getIncrementTimer()

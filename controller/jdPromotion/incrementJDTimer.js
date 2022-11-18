@@ -1,5 +1,6 @@
 const dtkSdk = require('dtk-nodejs-api-sdk');
 let moment = require('moment')
+const schedule = require("node-schedule")
 const { insertTable, operateTable } = require('../../dataBase/index')
 
 /*
@@ -32,7 +33,7 @@ let getJDlist = async (start_time, end_time) => {
   try{
     let statTime = new Date().getTime()
     let res = await queryApi(url, start_time, end_time)
-    console.log('京东商品转链接口耗时===>', new Date().getTime() - statTime)
+    // console.log('京东商品转链接口耗时===>', new Date().getTime() - statTime)
     
     if(res.data && res.data.length>0){
       jdListData = res.data.map(result => {
@@ -88,8 +89,8 @@ let updateJDlist = async ()=>{
   
   let start_time = moment(lastModifyRes[0]?.lastsync_time).format('yyyy-MM-DD HH:mm:ss')
   let end_time = moment(currentTime).format('yyyy-MM-DD HH:mm:ss')
-  // let start_time = '2022-10-07 19:50:00'
-  // let end_time = '2022-10-07 20:10:00'
+  // let start_time = '2022-11-18 22:53:00'
+  // let end_time = '2022-11-18 19:54:00'
   // 查询订单号是否已入库，如果已入库则更新对应的订单
   console.log('start_time', start_time, end_time)
   let {jdListData, orederSn, orderSnMap} = await getJDlist(start_time, end_time)
@@ -129,9 +130,12 @@ let updateJDlist = async ()=>{
 }
 
 // 每5分钟执行一次定时任务拉去最新的京东订单列表
-setInterval(() => {
-  updateJDlist()
-}, 300000);
+// setInterval(() => {
+//   updateJDlist()
+// }, 300000);
 
-// updateJDlist()
+schedule.scheduleJob('*/5 * * * *',function(){
+  updateJDlist()
+})
+
 
