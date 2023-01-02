@@ -5,12 +5,12 @@ const { insertTable, operateTable } = require('../../dataBase/index')
 const getIncrementTimer = async () => {
   let currentTime = new Date().getTime()
   // 查询上一次同步时间
-  let lastModifyRes = await operateTable(`select * from sync_flag`)
+  let lastModifyRes = await operateTable(`select * from sync_flag where sync_type = 'JD'`)
   
-  let start_time = lastModifyRes[0]?.lastsync_time || Math.floor((currentTime - 5*60*1000)/1000)
+  let start_time = Math.floor((lastModifyRes[0]?.lastsync_time)/1000 || (currentTime - 5*60*1000)/1000)
   let end_time = Math.floor(currentTime/1000)
-  // let start_time = Math.floor(new Date('2022-11-18 23:16:00').getTime()/1000)
-  // let end_time = Math.floor(new Date('2022-11-18 23:17:00').getTime()/1000)
+  // let start_time = Math.floor(new Date('2023-01-02 17:02:00').getTime()/1000)
+  // let end_time = Math.floor(new Date('2023-01-02 17:05:00').getTime()/1000)
   console.log('start_timePDD', start_time, end_time)
   let { order_list } = await incrementList(start_time, end_time)
   console.log('order_list===>', order_list)
@@ -74,18 +74,7 @@ const getIncrementTimer = async () => {
     
   }
 
-  // 记录本次更新时间
-  operateTable(`update sync_flag set lastsync_time=${Math.floor(currentTime/1000)} where sync_id=16`)
 }
 
-// 每5分钟执行一次定时任务拉去最想的拼多多订单列表
-// setInterval(() => {
-//   getIncrementTimer()
-// }, 300000);
-
-
-schedule.scheduleJob('*/3 * * * *',function(){
-  getIncrementTimer()
-})
-
+exports.getIncrementTimer = getIncrementTimer
 // getIncrementTimer()

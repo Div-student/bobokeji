@@ -89,8 +89,8 @@ let updateJDlist = async ()=>{
   
   let start_time = moment(lastModifyRes[0]?.lastsync_time).format('yyyy-MM-DD HH:mm:ss')
   let end_time = moment(currentTime).format('yyyy-MM-DD HH:mm:ss')
-  // let start_time = '2022-11-18 22:53:00'
-  // let end_time = '2022-11-18 19:54:00'
+  // let start_time = '2022-12-28 23:38:00'
+  // let end_time = '2022-12-28 23:39:00'
   // 查询订单号是否已入库，如果已入库则更新对应的订单
   console.log('start_time', start_time, end_time)
   let {jdListData, orederSn, orderSnMap} = await getJDlist(start_time, end_time)
@@ -124,18 +124,9 @@ let updateJDlist = async ()=>{
       ], jdList)
     }
   }
-
- // 记录本次更新时间
- operateTable(`update sync_flag set lastsync_time=${currentTime} where sync_type='JD'`)
 }
 
-// 每5分钟执行一次定时任务拉去最新的京东订单列表
-// setInterval(() => {
-//   updateJDlist()
-// }, 300000);
-
-schedule.scheduleJob('*/5 * * * *',function(){
-  updateJDlist()
-})
+exports.updateJDlist = updateJDlist
+// updateJDlist()
 
 
